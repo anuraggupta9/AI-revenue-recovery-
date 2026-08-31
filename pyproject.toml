@@ -1,0 +1,56 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "recoup"
+version = "0.1.0"
+description = "A bounded recovery agent for failed payments and subscription mandates"
+requires-python = ">=3.10"
+
+# Deliberately empty. recoup.domain, recoup.audit, recoup.diagnosis and
+# recoup.policy import only the standard library, so the interesting half of
+# this system can be tested with no install step at all:
+#
+#     python -m unittest discover -s tests -q
+#
+# Everything third-party lives behind an optional extra below.
+dependencies = []
+
+[project.optional-dependencies]
+# Numeric layer: the logistic propensity model, its isotonic calibration, and the
+# calibration metrics. numpy only — the bootstrap and the metrics tables are
+# integer arithmetic on paise, which pandas would not help with and float
+# arithmetic on money would actively hurt.
+model = [
+    "numpy>=1.26",
+]
+# HTTP surface and the live Razorpay adapter. Listed for the shape of the eventual
+# dependency set; neither package exists yet, so installing this extra gets you
+# nothing that any code in the repository imports.
+api = [
+    "fastapi>=0.110",
+    "uvicorn[standard]>=0.29",
+    "pydantic>=2.6",
+    "requests>=2.31",
+    "python-dotenv>=1.0",
+]
+dev = [
+    "pytest>=8.0",
+    "ruff>=0.4",
+]
+
+[tool.setuptools.packages.find]
+include = ["recoup*"]
+
+[tool.ruff]
+line-length = 100
+target-version = "py310"
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "B", "UP", "SIM", "RUF"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+# unittest-style TestCase classes, so the suite runs under either runner.
+python_files = ["test_*.py"]
